@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/base :: layout(~{::content})}">
+<head>
+    <title th:text="${pageTitle}">Book Details</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/web/">Home</a></li>
+                <li class="breadcrumb-item active" th:text="${book.title}">Book Title</li>
+            </ol>
+        </nav>
+
+        <!-- Book Details -->
+        <div class="row">
+            <div class="col-md-4">
+                <!-- Book Cover -->
+                <div class="book-cover mb-3" style="height: 400px; font-size: 1.5em;">
+                    <div class="text-center">
+                        <i class="fas fa-book fa-4x mb-3"></i>
+                        <div class="fw-bold" th:text="${book.title}">Book Title</div>
+                    </div>
+                </div>
+                
+                <!-- Stock Status -->
+                <div class="text-center mb-3">
+                    <span th:if="${book.stockQuantity > 0}" 
+                          class="badge bg-success fs-6 px-3 py-2">
+                        <i class="fas fa-check-circle"></i> 
+                        <span th:text="${book.stockQuantity}">0</span> in stock
+                    </span>
+                    <span th:if="${book.stockQuantity == 0}" 
+                          class="badge bg-danger fs-6 px-3 py-2">
+                        <i class="fas fa-times-circle"></i> Out of stock
+                    </span>
+                </div>
+
+                <!-- Price -->
+                <div class="text-center mb-4">
+                    <h2 class="price-tag d-inline-block fs-3 px-4 py-2">
+                        $<span th:text="${#numbers.formatDecimal(book.price, 1, 2)}">0.00</span>
+                    </h2>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-grid gap-2">
+                    <a th:href="@{/web/edit/{id}(id=${book.id})}" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Edit Book
+                    </a>
+                    <button type="button" class="btn btn-danger" 
+                            th:onclick="'confirmDelete(' + ${book.id} + ', \'' + ${book.title} + '\')'">
+                        <i class="fas fa-trash"></i> Delete Book
+                    </button>
+                    <a href="/web/" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Books
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <!-- Book Information -->
+                <div class="card">
+                    <div class="card-header">
+                        <h1 class="card-title mb-0" th:text="${book.title}">Book Title</h1>
+                        <h5 class="text-muted mb-0">
+                            by <a th:href="@{/web/author/{author}(author=${book.author})}" 
+                                  class="text-decoration-none" th:text="${book.author}">Author</a>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Description -->
+                        <div class="mb-4" th:if="${book.description}">
+                            <h6><i class="fas fa-info-circle"></i> Description</h6>
+                            <p th:text="${book.description}" class="text-muted">Book description</p>
+                        </div>
+
+                        <!-- Book Details -->
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <h6><i class="fas fa-calendar"></i> Publication Year</h6>
+                                <p th:text="${book.publicationYear}" class="mb-3">Year</p>
+                                
+                                <h6><i class="fas fa-barcode"></i> ISBN</h6>
+                                <p th:text="${book.isbn}" class="mb-3 font-monospace">ISBN</p>
+                            </div>
+                            <div class="col-sm-6">
+                                <h6><i class="fas fa-boxes"></i> Stock Quantity</h6>
+                                <p class="mb-3">
+                                    <span class="badge fs-6" 
+                                          th:classappend="${book.stockQuantity > 0} ? 'bg-success' : 'bg-danger'">
+                                        <span th:text="${book.stockQuantity}">0</span> units
+                                    </span>
+                                </p>
+                                
+                                <h6><i class="fas fa-tag"></i> Book ID</h6>
+                                <p th:text="${book.id}" class="mb-3 font-monospace">#ID</p>
+                            </div>
+                        </div>
+
+                        <!-- Timestamps -->
+                        <div class="row" th:if="${book.createdAt}">
+                            <div class="col-sm-6">
+                                <h6><i class="fas fa-plus-circle"></i> Added</h6>
+                                <p th:text="${#temporals.format(book.createdAt, 'MMM dd, yyyy HH:mm')}" 
+                                   class="mb-3 text-muted">Date</p>
+                            </div>
+                            <div class="col-sm-6" th:if="${book.updatedAt}">
+                                <h6><i class="fas fa-edit"></i> Last Updated</h6>
+                                <p th:text="${#temporals.format(book.updatedAt, 'MMM dd, yyyy HH:mm')}" 
+                                   class="mb-3 text-muted">Date</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Related Books -->
+                <div class="card mt-4" th:if="${book.author}">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-book-open"></i> More books by 
+                            <span th:text="${book.author}">Author</span>
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <a th:href="@{/web/author/{author}(author=${book.author})}" 
+                           class="btn btn-outline-primary">
+                            <i class="fas fa-search"></i> View all books by this author
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-exclamation-triangle text-warning"></i> Confirm Delete
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete the book "<strong id="bookTitle"></strong>"?</p>
+                    <p class="text-muted">This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form id="deleteForm" method="post" style="display: inline;">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Delete Book
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function confirmDelete(bookId, bookTitle) {
+            document.getElementById('bookTitle').textContent = bookTitle;
+            document.getElementById('deleteForm').action = '/web/delete/' + bookId;
+            new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        }
+    </script>
+</body>
+</html>

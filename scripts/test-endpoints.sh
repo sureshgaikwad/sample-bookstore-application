@@ -80,10 +80,18 @@ test_endpoint() {
 }
 
 # Test all endpoints
-echo -e "\n${YELLOW}=== TESTING ENDPOINTS ===${NC}"
+echo -e "\n${YELLOW}=== TESTING WEB UI ===${NC}"
 
-# Root endpoint
-test_endpoint "/" "Root endpoint (Application info)"
+# Web UI endpoints
+test_endpoint "/" "Root endpoint (should redirect to web UI)" 302
+test_endpoint "/web/" "Web UI home page"
+test_endpoint "/web/in-stock" "Books in stock page"
+test_endpoint "/web/add" "Add book form"
+
+echo -e "\n${YELLOW}=== TESTING API ENDPOINTS ===${NC}"
+
+# API info endpoint
+test_endpoint "/api" "API information endpoint"
 
 # Health endpoints
 test_endpoint "/health" "Simple health check"

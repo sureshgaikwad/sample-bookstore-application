@@ -27,10 +27,18 @@ public class RootController {
     private String appAuthor;
 
     /**
-     * Root endpoint - provides application information and available endpoints
+     * Root endpoint - redirects to web UI
      */
     @GetMapping("/")
-    public ResponseEntity<Map<String, Object>> root() {
+    public String rootRedirect() {
+        return "redirect:/web/";
+    }
+
+    /**
+     * API info endpoint - provides application information and available endpoints
+     */
+    @GetMapping("/api")
+    public ResponseEntity<Map<String, Object>> apiInfo() {
         Map<String, Object> response = new HashMap<>();
         response.put("application", appName);
         response.put("version", appVersion);

@@ -8,10 +8,12 @@ A simple RESTful bookstore application built with Spring Boot, Maven, and H2 dat
 
 ## Features
 
-- **Book Management**: Create, read, update, and delete books
+- **Web User Interface**: Complete web UI for browsing and managing books
+- **Book Management**: Create, read, update, and delete books via web interface
 - **Search Functionality**: Search books by title, author, or ISBN
-- **Stock Management**: Track book inventory
+- **Stock Management**: Track book inventory with visual indicators
 - **RESTful API**: Full REST API with proper HTTP methods
+- **Responsive Design**: Works on desktop, tablet, and mobile devices
 - **In-Memory Database**: H2 database for easy development and testing
 - **Data Validation**: Input validation using Bean Validation
 - **Sample Data**: Pre-loaded with sample books
@@ -25,6 +27,8 @@ A simple RESTful bookstore application built with Spring Boot, Maven, and H2 dat
 - **Maven**
 - **Bean Validation**
 - **Spring Boot Actuator** (for health checks and monitoring)
+- **Thymeleaf** (for web UI templates)
+- **Bootstrap 5** (for responsive design)
 - **Docker** (for containerization)
 - **Kubernetes** (for orchestration)
 
@@ -53,6 +57,12 @@ A simple RESTful bookstore application built with Spring Boot, Maven, and H2 dat
    ```
 
 4. The application will start on `http://localhost:8080`
+
+### Accessing the Application
+
+- **Web Interface**: http://localhost:8080/web/ (or just http://localhost:8080/)
+- **REST API**: http://localhost:8080/api/books
+- **Health Check**: http://localhost:8080/actuator/health
 
 ### Database Access
 
