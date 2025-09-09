@@ -1,0 +1,10 @@
+# OpenShift Source-to-Image (S2I) environment variables
+# Author: Suresh Gaikwad
+
+# Maven build options
+MAVEN_ARGS=clean package -DskipTests -B
+MAVEN_OPTS=-Xmx1024m
+
+# Application configuration
+SPRING_PROFILES_ACTIVE=openshift
+SERVER_PORT=8080

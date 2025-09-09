@@ -1,0 +1,166 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+  name: bookstore-app-template
+  annotations:
+    description: "Bookstore Application Template for OpenShift - Created by Suresh Gaikwad"
+    tags: "java,spring-boot,bookstore"
+    openshift.io/display-name: "Bookstore Application"
+    openshift.io/provider-display-name: "Suresh Gaikwad"
+parameters:
+- name: APPLICATION_NAME
+  displayName: Application Name
+  description: The name of the application
+  value: bookstore-app
+  required: true
+- name: GIT_URI
+  displayName: Git Repository URL
+  description: The URL of the Git repository
+  required: true
+- name: GIT_REF
+  displayName: Git Reference
+  description: The Git branch/tag reference
+  value: main
+- name: REPLICA_COUNT
+  displayName: Replica Count
+  description: Number of replicas to deploy
+  value: "2"
+objects:
+- apiVersion: apps.openshift.io/v1
+  kind: DeploymentConfig
+  metadata:
+    name: ${APPLICATION_NAME}
+    labels:
+      app: ${APPLICATION_NAME}
+      author: suresh-gaikwad
+  spec:
+    replicas: ${{REPLICA_COUNT}}
+    selector:
+      app: ${APPLICATION_NAME}
+    strategy:
+      type: Rolling
+      rollingParams:
+        updatePeriodSeconds: 1
+        intervalSeconds: 1
+        timeoutSeconds: 600
+        maxUnavailable: 25%
+        maxSurge: 25%
+    template:
+      metadata:
+        labels:
+          app: ${APPLICATION_NAME}
+          author: suresh-gaikwad
+      spec:
+        containers:
+        - name: ${APPLICATION_NAME}
+          image: ${APPLICATION_NAME}:latest
+          ports:
+          - containerPort: 8080
+            protocol: TCP
+          env:
+          - name: SPRING_PROFILES_ACTIVE
+            value: "openshift"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+    triggers:
+    - type: ConfigChange
+    - type: ImageChange
+      imageChangeParams:
+        automatic: true
+        containerNames:
+        - ${APPLICATION_NAME}
+        from:
+          kind: ImageStreamTag
+          name: ${APPLICATION_NAME}:latest
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: ${APPLICATION_NAME}
+    labels:
+      app: ${APPLICATION_NAME}
+      author: suresh-gaikwad
+  spec:
+    ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+      name: http
+    selector:
+      app: ${APPLICATION_NAME}
+- apiVersion: route.openshift.io/v1
+  kind: Route
+  metadata:
+    name: ${APPLICATION_NAME}
+    labels:
+      app: ${APPLICATION_NAME}
+      author: suresh-gaikwad
+  spec:
+    to:
+      kind: Service
+      name: ${APPLICATION_NAME}
+    port:
+      targetPort: http
+    wildcardPolicy: None
+- apiVersion: image.openshift.io/v1
+  kind: ImageStream
+  metadata:
+    name: ${APPLICATION_NAME}
+    labels:
+      app: ${APPLICATION_NAME}
+      author: suresh-gaikwad
+- apiVersion: build.openshift.io/v1
+  kind: BuildConfig
+  metadata:
+    name: ${APPLICATION_NAME}
+    labels:
+      app: ${APPLICATION_NAME}
+      author: suresh-gaikwad
+  spec:
+    source:
+      type: Git
+      git:
+        uri: ${GIT_URI}
+        ref: ${GIT_REF}
+    strategy:
+      type: Source
+      sourceStrategy:
+        from:
+          kind: ImageStreamTag
+          namespace: openshift
+          name: java:17
+        env:
+        - name: MAVEN_ARGS
+          value: "clean package -DskipTests -B"
+    output:
+      to:
+        kind: ImageStreamTag
+        name: ${APPLICATION_NAME}:latest
+    triggers:
+    - type: ConfigChange
+    - type: GitHub
+      github:
+        secret: ${APPLICATION_NAME}-github-webhook
+    - type: Generic
+      generic:
+        secret: ${APPLICATION_NAME}-generic-webhook

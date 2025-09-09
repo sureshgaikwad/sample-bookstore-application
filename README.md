@@ -333,9 +333,12 @@ docker run -p 8080:8080 -e SPRING_PROFILES_ACTIVE=kubernetes bookstore-app:1.0.0
 ### Docker Image Features
 
 - **Multi-stage build** for smaller image size
+- **Upstream images** for maximum compatibility (Alpine & Ubuntu options)
 - **Non-root user** for security
+- **OpenShift compatible** with random UID support
 - **Health check** included
-- **Optimized layers** for better caching
+- **Optimized JVM settings** for containers
+- **Multiple image options** (see DOCKER_IMAGES.md)
 
 ## Project Structure
 
