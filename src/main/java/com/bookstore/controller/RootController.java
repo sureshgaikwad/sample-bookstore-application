@@ -3,6 +3,7 @@ package com.bookstore.controller;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
@@ -27,11 +28,43 @@ public class RootController {
     private String appAuthor;
 
     /**
-     * Root endpoint - redirects to web UI
+     * Root endpoint - serves simple bookstore web UI
      */
-    @GetMapping("/")
-    public String rootRedirect() {
-        return "redirect:/web/";
+    @GetMapping(value = "/", produces = "text/html")
+    @ResponseBody
+    public String rootPage() {
+        return "<!DOCTYPE html>" +
+               "<html><head><title>Bookstore Application</title>" +
+               "<meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
+               "<link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css' rel='stylesheet'>" +
+               "</head><body>" +
+               "<nav class='navbar navbar-dark bg-dark'><div class='container'>" +
+               "<a class='navbar-brand' href='/'>📚 Bookstore</a>" +
+               "</div></nav>" +
+               "<div class='container mt-4'>" +
+               "<h1>Bookstore Application</h1>" +
+               "<p class='text-muted'>Created by <strong>Suresh Gaikwad</strong></p>" +
+               "<div class='alert alert-success'>" +
+               "<h4>✅ Application is working!</h4>" +
+               "<p>The bookstore application has been successfully deployed.</p>" +
+               "</div>" +
+               "<h3>Available Endpoints:</h3>" +
+               "<div class='list-group'>" +
+               "<a href='/api/books' class='list-group-item list-group-item-action'>" +
+               "<strong>📚 GET /api/books</strong> - View all books (JSON API)" +
+               "</a>" +
+               "<a href='/api/books/search?q=gatsby' class='list-group-item list-group-item-action'>" +
+               "<strong>🔍 GET /api/books/search?q=gatsby</strong> - Search books" +
+               "</a>" +
+               "<a href='/actuator/health' class='list-group-item list-group-item-action'>" +
+               "<strong>❤️ GET /actuator/health</strong> - Health check" +
+               "</a>" +
+               "<a href='/actuator/info' class='list-group-item list-group-item-action'>" +
+               "<strong>ℹ️ GET /actuator/info</strong> - Application info" +
+               "</a>" +
+               "</div>" +
+               "<hr><p class='text-center text-muted'>&copy; 2024 Bookstore Application - Version 1.0.0</p>" +
+               "</div></body></html>";
     }
 
     /**
