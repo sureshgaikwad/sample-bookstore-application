@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @author Suresh Gaikwad
  * @version 1.0.4
  * Build Date: 2025-09-15
+ * GitOps Test: Fixed sed approach
  */
 @SpringBootApplication
 public class BookstoreApplication {
