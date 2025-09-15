@@ -1,0 +1,71 @@
+# Multi-stage build using Red Hat Universal Base Images (UBI)
+# Author: Suresh Gaikwad
+# For ARO/OpenShift deployment with strict UBI requirements
+
+# Builder stage - using Red Hat UBI with OpenJDK 17
+FROM registry.access.redhat.com/ubi8/openjdk-17:latest AS builder
+
+# Set user to jboss (default in UBI OpenJDK image)
+USER jboss
+
+# Set working directory
+WORKDIR /home/jboss
+
+# Copy pom.xml first to leverage Docker cache
+COPY --chown=jboss:root pom.xml .
+
+# Download dependencies
+RUN mvn dependency:go-offline -B
+
+# Copy source code
+COPY --chown=jboss:root src ./src
+
+# Build the application
+RUN mvn clean package -DskipTests -B
+
+# Runtime stage - using Red Hat UBI minimal with OpenJDK 17 runtime
+FROM registry.access.redhat.com/ubi8/openjdk-17-runtime:latest
+
+# Add labels for better image management
+LABEL maintainer="Suresh Gaikwad <suresh.gaikwad@example.com>" \
+      description="Simple Bookstore Application using Spring Boot on UBI" \
+      version="1.0.0" \
+      io.openshift.expose-services="8080:http" \
+      io.k8s.description="Bookstore REST API application" \
+      io.k8s.display-name="Bookstore App" \
+      io.openshift.tags="java,spring-boot,bookstore"
+
+# Set working directory
+WORKDIR /home/jboss
+
+# Copy the JAR file from builder stage
+COPY --from=builder --chown=jboss:root /home/jboss/target/bookstore-app-1.0.0.jar app.jar
+
+# Create application.properties from the source
+COPY --chown=jboss:root src/main/resources/application.properties application.properties
+
+# Ensure proper permissions for OpenShift random UIDs
+USER root
+RUN chmod -R g+rwX /home/jboss && \
+    chgrp -R 0 /home/jboss && \
+    chmod -R g=u /home/jboss
+
+# Switch back to jboss user (will be overridden by OpenShift random UID)
+USER jboss
+
+# Expose port
+EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8080/actuator/health || exit 1
+
+# Run the application with optimized JVM settings for containers
+ENTRYPOINT ["java", \
+    "-XX:+UseContainerSupport", \
+    "-XX:MaxRAMPercentage=75.0", \
+    "-XX:+UseG1GC", \
+    "-XX:+UseStringDeduplication", \
+    "-Djava.security.egd=file:/dev/./urandom", \
+    "-Dspring.config.location=classpath:/application.properties", \
+    "-jar", "app.jar"]

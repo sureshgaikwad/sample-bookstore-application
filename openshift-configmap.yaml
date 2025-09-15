@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bookstore-config
+  namespace: sgaikwad
+  labels:
+    app: bookstore-app
+    author: suresh-gaikwad
+  annotations:
+    description: "Bookstore Application Configuration"
+data:
+  application.properties: |
+    # Server Configuration
+    server.port=8080
+    
+    # Database Configuration (H2 In-Memory Database)
+    spring.datasource.url=jdbc:h2:mem:bookstore
+    spring.datasource.driverClassName=org.h2.Driver
+    spring.datasource.username=sa
+    spring.datasource.password=
+    
+    # H2 Console Configuration (disabled in production)
+    spring.h2.console.enabled=false
+    spring.h2.console.path=/h2-console
+    
+    # JPA/Hibernate Configuration
+    spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+    spring.jpa.hibernate.ddl-auto=create-drop
+    spring.jpa.show-sql=false
+    spring.jpa.properties.hibernate.format_sql=false
+    
+    # Logging Configuration
+    logging.level.com.bookstore=INFO
+    logging.level.org.springframework.web=INFO
+    logging.level.org.hibernate.SQL=WARN
+    logging.level.org.hibernate.type.descriptor.sql.BasicBinder=WARN
+    logging.level.root=WARN
+    
+    # Application Configuration
+    spring.application.name=bookstore-app
+    
+    # Thymeleaf Configuration
+    spring.thymeleaf.cache=true
+    spring.thymeleaf.enabled=true
+    spring.thymeleaf.prefix=classpath:/templates/
+    spring.thymeleaf.suffix=.html
+    
+    # Management endpoints for OpenShift health checks
+    management.endpoints.web.exposure.include=health,info,metrics,prometheus
+    management.endpoint.health.show-details=when-authorized
+    management.endpoint.health.probes.enabled=true
+    management.health.livenessstate.enabled=true
+    management.health.readinessstate.enabled=true
+    
+    # Application Info
+    info.app.name=Bookstore Application
+    info.app.description=Simple Bookstore REST API
+    info.app.version=1.0.0
+    info.app.author=Suresh Gaikwad
+    info.app.contact.name=Suresh Gaikwad
+    info.app.contact.email=suresh.gaikwad@example.com

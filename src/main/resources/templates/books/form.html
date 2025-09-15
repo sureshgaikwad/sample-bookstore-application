@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle} ?: 'Book Form'">Book Form</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        .footer {
+            background-color: #343a40;
+            color: white;
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/web/">
+                <i class="fas fa-book"></i> Bookstore
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/web/">
+                            <i class="fas fa-home"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/web/in-stock">
+                            <i class="fas fa-boxes"></i> In Stock
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/web/add">
+                            <i class="fas fa-plus"></i> Add Book
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-cog"></i> API
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/api/books" target="_blank">
+                                <i class="fas fa-code"></i> REST API
+                            </a></li>
+                            <li><a class="dropdown-item" href="/actuator/health" target="_blank">
+                                <i class="fas fa-heartbeat"></i> Health Check
+                            </a></li>
+                            <li><a class="dropdown-item" href="/actuator/info" target="_blank">
+                                <i class="fas fa-info-circle"></i> App Info
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container my-4">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/web/">Home</a></li>
+                <li class="breadcrumb-item active" th:text="${pageTitle}">Form</li>
+            </ol>
+        </nav>
+
+        <!-- Alert Messages -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i> <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle"></i> <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title mb-0">
+                            <i th:class="${book.id != null} ? 'fas fa-edit' : 'fas fa-plus'"></i>
+                            <span th:text="${pageTitle}">Book Form</span>
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="${formAction}" method="post" th:object="${book}">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <!-- Title -->
+                                    <div class="mb-3">
+                                        <label for="title" class="form-label">
+                                            <i class="fas fa-book"></i> Title *
+                                        </label>
+                                        <input type="text" class="form-control" id="title" 
+                                               th:field="*{title}" required maxlength="255"
+                                               placeholder="Enter book title">
+                                        <div class="form-text">The title of the book</div>
+                                    </div>
+
+                                    <!-- Author -->
+                                    <div class="mb-3">
+                                        <label for="author" class="form-label">
+                                            <i class="fas fa-user"></i> Author *
+                                        </label>
+                                        <input type="text" class="form-control" id="author" 
+                                               th:field="*{author}" required maxlength="255"
+                                               placeholder="Enter author name">
+                                        <div class="form-text">The author of the book</div>
+                                    </div>
+
+                                    <!-- ISBN -->
+                                    <div class="mb-3">
+                                        <label for="isbn" class="form-label">
+                                            <i class="fas fa-barcode"></i> ISBN *
+                                        </label>
+                                        <input type="text" class="form-control" id="isbn" 
+                                               th:field="*{isbn}" required maxlength="20"
+                                               placeholder="978-0-123456-78-9">
+                                        <div class="form-text">International Standard Book Number</div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <!-- Price -->
+                                    <div class="mb-3">
+                                        <label for="price" class="form-label">
+                                            <i class="fas fa-tag"></i> Price *
+                                        </label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="form-control" id="price" 
+                                                   th:field="*{price}" required step="0.01" min="0"
+                                                   placeholder="0.00">
+                                        </div>
+                                        <div class="form-text">Price in USD</div>
+                                    </div>
+
+                                    <!-- Publication Year -->
+                                    <div class="mb-3">
+                                        <label for="publicationYear" class="form-label">
+                                            <i class="fas fa-calendar"></i> Publication Year
+                                        </label>
+                                        <input type="number" class="form-control" id="publicationYear" 
+                                               th:field="*{publicationYear}" min="1000" max="2030"
+                                               placeholder="2024">
+                                        <div class="form-text">Year the book was published</div>
+                                    </div>
+
+                                    <!-- Stock Quantity -->
+                                    <div class="mb-3">
+                                        <label for="stockQuantity" class="form-label">
+                                            <i class="fas fa-boxes"></i> Stock Quantity
+                                        </label>
+                                        <input type="number" class="form-control" id="stockQuantity" 
+                                               th:field="*{stockQuantity}" min="0"
+                                               placeholder="0">
+                                        <div class="form-text">Number of books in stock</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="mb-4">
+                                <label for="description" class="form-label">
+                                    <i class="fas fa-info-circle"></i> Description
+                                </label>
+                                <textarea class="form-control" id="description" rows="4" 
+                                          th:field="*{description}" maxlength="1000"
+                                          placeholder="Enter a brief description of the book..."></textarea>
+                                <div class="form-text">Brief description of the book (optional)</div>
+                            </div>
+
+                            <!-- Form Actions -->
+                            <div class="d-flex justify-content-between">
+                                <a href="/web/" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i> Cancel
+                                </a>
+                                <div>
+                                    <button type="reset" class="btn btn-outline-warning me-2">
+                                        <i class="fas fa-undo"></i> Reset
+                                    </button>
+                                    <button type="submit" class="btn btn-success">
+                                        <i th:class="${book.id != null} ? 'fas fa-save' : 'fas fa-plus'"></i>
+                                        <span th:text="${book.id != null} ? 'Update Book' : 'Add Book'">Save</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Help Card -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-question-circle"></i> Help & Tips
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <ul class="mb-0">
+                            <li><strong>Title & Author:</strong> Required fields for book identification</li>
+                            <li><strong>ISBN:</strong> Should be unique for each book (e.g., 978-0-123456-78-9)</li>
+                            <li><strong>Price:</strong> Enter the book price in USD (e.g., 19.99)</li>
+                            <li><strong>Stock:</strong> Set to 0 if the book is out of stock</li>
+                            <li><strong>Description:</strong> Optional but helpful for users</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container text-center">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><i class="fas fa-book"></i> Bookstore Application</h5>
+                    <p class="mb-0">A simple bookstore management system</p>
+                </div>
+                <div class="col-md-6">
+                    <h6>Created by</h6>
+                    <p class="mb-0"><strong>Suresh Gaikwad</strong></p>
+                    <p class="mb-0">Version 1.0.0</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Auto-format ISBN input
+        document.getElementById('isbn').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^0-9X]/g, '');
+            if (value.length === 13) {
+                value = value.replace(/(\d{3})(\d{1})(\d{6})(\d{2})(\d{1})/, '$1-$2-$3-$4-$5');
+            } else if (value.length === 10) {
+                value = value.replace(/(\d{1})(\d{6})(\d{2})(\d{1})/, '$1-$2-$3-$4');
+            }
+            e.target.value = value;
+        });
+
+        // Set current year as default for publication year if empty
+        document.addEventListener('DOMContentLoaded', function() {
+            const yearInput = document.getElementById('publicationYear');
+            if (!yearInput.value) {
+                yearInput.placeholder = new Date().getFullYear();
+            }
+        });
+    </script>
+</body>
+</html>

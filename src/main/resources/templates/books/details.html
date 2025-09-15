@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle} ?: 'Book Details'">Book Details</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        .book-cover {
+            height: 400px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5em;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        .price-tag {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 1rem;
+            font-weight: bold;
+        }
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        .footer {
+            background-color: #343a40;
+            color: white;
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/web/">
+                <i class="fas fa-book"></i> Bookstore
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/web/">
+                            <i class="fas fa-home"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/web/in-stock">
+                            <i class="fas fa-boxes"></i> In Stock
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/web/add">
+                            <i class="fas fa-plus"></i> Add Book
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-cog"></i> API
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/api/books" target="_blank">
+                                <i class="fas fa-code"></i> REST API
+                            </a></li>
+                            <li><a class="dropdown-item" href="/actuator/health" target="_blank">
+                                <i class="fas fa-heartbeat"></i> Health Check
+                            </a></li>
+                            <li><a class="dropdown-item" href="/actuator/info" target="_blank">
+                                <i class="fas fa-info-circle"></i> App Info
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container my-4">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/web/">Home</a></li>
+                <li class="breadcrumb-item active" th:text="${book.title}">Book Title</li>
+            </ol>
+        </nav>
+
+        <!-- Book Details -->
+        <div class="row">
+            <div class="col-md-4">
+                <!-- Book Cover -->
+                <div class="book-cover mb-3">
+                    <div class="text-center">
+                        <i class="fas fa-book fa-4x mb-3"></i>
+                        <div class="fw-bold" th:text="${book.title}">Book Title</div>
+                    </div>
+                </div>
+                
+                <!-- Stock Status -->
+                <div class="text-center mb-3">
+                    <span th:if="${book.stockQuantity > 0}" 
+                          class="badge bg-success fs-6 px-3 py-2">
+                        <i class="fas fa-check-circle"></i> 
+                        <span th:text="${book.stockQuantity}">0</span> in stock
+                    </span>
+                    <span th:if="${book.stockQuantity == 0}" 
+                          class="badge bg-danger fs-6 px-3 py-2">
+                        <i class="fas fa-times-circle"></i> Out of stock
+                    </span>
+                </div>
+
+                <!-- Price -->
+                <div class="text-center mb-4">
+                    <h2 class="price-tag d-inline-block fs-3 px-4 py-2">
+                        $<span th:text="${#numbers.formatDecimal(book.price, 1, 2)}">0.00</span>
+                    </h2>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-grid gap-2">
+                    <a th:href="@{/web/edit/{id}(id=${book.id})}" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Edit Book
+                    </a>
+                    <button type="button" class="btn btn-danger" 
+                            th:onclick="'confirmDelete(' + ${book.id} + ', \'' + ${book.title} + '\')'">
+                        <i class="fas fa-trash"></i> Delete Book
+                    </button>
+                    <a href="/web/" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Books
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <!-- Book Information -->
+                <div class="card">
+                    <div class="card-header">
+                        <h1 class="card-title mb-0" th:text="${book.title}">Book Title</h1>
+                        <h5 class="text-muted mb-0">
+                            by <a th:href="@{/web/author/{author}(author=${book.author})}" 
+                                  class="text-decoration-none" th:text="${book.author}">Author</a>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Description -->
+                        <div class="mb-4" th:if="${book.description}">
+                            <h6><i class="fas fa-info-circle"></i> Description</h6>
+                            <p th:text="${book.description}" class="text-muted">Book description</p>
+                        </div>
+
+                        <!-- Book Details -->
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <h6><i class="fas fa-calendar"></i> Publication Year</h6>
+                                <p th:text="${book.publicationYear}" class="mb-3">Year</p>
+                                
+                                <h6><i class="fas fa-barcode"></i> ISBN</h6>
+                                <p th:text="${book.isbn}" class="mb-3 font-monospace">ISBN</p>
+                            </div>
+                            <div class="col-sm-6">
+                                <h6><i class="fas fa-boxes"></i> Stock Quantity</h6>
+                                <p class="mb-3">
+                                    <span class="badge fs-6" 
+                                          th:classappend="${book.stockQuantity > 0} ? 'bg-success' : 'bg-danger'">
+                                        <span th:text="${book.stockQuantity}">0</span> units
+                                    </span>
+                                </p>
+                                
+                                <h6><i class="fas fa-tag"></i> Book ID</h6>
+                                <p th:text="${book.id}" class="mb-3 font-monospace">#ID</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Related Books -->
+                <div class="card mt-4" th:if="${book.author}">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-book-open"></i> More books by 
+                            <span th:text="${book.author}">Author</span>
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <a th:href="@{/web/author/{author}(author=${book.author})}" 
+                           class="btn btn-outline-primary">
+                            <i class="fas fa-search"></i> View all books by this author
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container text-center">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><i class="fas fa-book"></i> Bookstore Application</h5>
+                    <p class="mb-0">A simple bookstore management system</p>
+                </div>
+                <div class="col-md-6">
+                    <h6>Created by</h6>
+                    <p class="mb-0"><strong>Suresh Gaikwad</strong></p>
+                    <p class="mb-0">Version 1.0.0</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-exclamation-triangle text-warning"></i> Confirm Delete
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete the book "<strong id="bookTitle"></strong>"?</p>
+                    <p class="text-muted">This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form id="deleteForm" method="post" style="display: inline;">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Delete Book
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        function confirmDelete(bookId, bookTitle) {
+            document.getElementById('bookTitle').textContent = bookTitle;
+            document.getElementById('deleteForm').action = '/web/delete/' + bookId;
+            new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        }
+    </script>
+</body>
+</html>
