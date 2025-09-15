@@ -1,4 +1,11 @@
-# Bookstore Application
+# # Bookstore Application
+
+Simple Spring Boot application demonstrating basic CRUD operations with JPA and Thymeleaf.
+Includes book rating feature added in v1.0.x series.
+
+## GitOps Test
+
+Testing pipeline integration - v1.0.5ookstore Application
 
 A simple RESTful bookstore application built with Spring Boot, Maven, and H2 database.
 
