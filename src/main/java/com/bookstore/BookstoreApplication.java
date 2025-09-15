@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
- * Bookstore Application - A simple REST API for managing books
+ * Bookstore Application - A simple REST API for managing books with rating feature
  * 
  * @author Suresh Gaikwad
- * @version 1.0.0
+ * @version 1.0.1
  */
 @SpringBootApplication
 public class BookstoreApplication {
