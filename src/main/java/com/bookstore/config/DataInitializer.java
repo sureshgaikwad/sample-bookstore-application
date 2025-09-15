@@ -1,12 +1,15 @@
 package com.bookstore.config;
 
 import com.bookstore.model.Book;
+import com.bookstore.model.Rating;
 import com.bookstore.repository.BookRepository;
+import com.bookstore.repository.RatingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * Data Initializer - Loads sample data into the database
@@ -20,12 +23,16 @@ public class DataInitializer implements CommandLineRunner {
 
     @Autowired
     private BookRepository bookRepository;
+    
+    @Autowired
+    private RatingRepository ratingRepository;
 
     @Override
     public void run(String... args) throws Exception {
         // Check if data already exists
         if (bookRepository.count() == 0) {
             initializeBooks();
+            initializeRatings();
         }
     }
 
@@ -84,5 +91,48 @@ public class DataInitializer implements CommandLineRunner {
         bookRepository.save(book5);
 
         System.out.println("Sample books initialized successfully!");
+    }
+    
+    private void initializeRatings() {
+        // Get all books
+        List<Book> books = bookRepository.findAll();
+        
+        if (books.size() >= 5) {
+            Book book1 = books.get(0); // The Great Gatsby
+            Book book2 = books.get(1); // To Kill a Mockingbird
+            Book book3 = books.get(2); // 1984
+            Book book4 = books.get(3); // Pride and Prejudice
+            Book book5 = books.get(4); // The Catcher in the Rye
+            
+            // Ratings for "The Great Gatsby"
+            ratingRepository.save(new Rating(5, "Alice Johnson", "A masterpiece of American literature! The symbolism and prose are simply beautiful.", book1));
+            ratingRepository.save(new Rating(4, "Bob Smith", "Great book, but the ending was a bit sad for my taste.", book1));
+            ratingRepository.save(new Rating(5, "Carol Davis", "One of my all-time favorites. Fitzgerald's writing is incredible.", book1));
+            
+            // Ratings for "To Kill a Mockingbird"
+            ratingRepository.save(new Rating(5, "David Wilson", "Powerful and moving. A must-read for everyone.", book2));
+            ratingRepository.save(new Rating(5, "Emma Brown", "Beautifully written with important themes that are still relevant today.", book2));
+            ratingRepository.save(new Rating(4, "Frank Miller", "Excellent story and character development.", book2));
+            ratingRepository.save(new Rating(5, "Grace Lee", "This book changed my perspective on many things. Highly recommended!", book2));
+            
+            // Ratings for "1984"
+            ratingRepository.save(new Rating(5, "Henry Jones", "Chilling and prophetic. More relevant than ever in today's world.", book3));
+            ratingRepository.save(new Rating(4, "Ivy Chen", "Dystopian masterpiece, though quite depressing.", book3));
+            ratingRepository.save(new Rating(5, "Jack Taylor", "Orwell's vision is terrifyingly accurate.", book3));
+            
+            // Ratings for "Pride and Prejudice"
+            ratingRepository.save(new Rating(5, "Kate Anderson", "Perfect romance with witty dialogue and strong characters.", book4));
+            ratingRepository.save(new Rating(4, "Liam O'Connor", "Not usually my genre, but I enjoyed it more than expected.", book4));
+            ratingRepository.save(new Rating(5, "Mary White", "Jane Austen at her finest. Elizabeth Bennet is such a great character!", book4));
+            ratingRepository.save(new Rating(4, "Nick Garcia", "Well-written period piece with timeless themes.", book4));
+            
+            // Ratings for "The Catcher in the Rye"
+            ratingRepository.save(new Rating(3, "Olivia Martinez", "Interesting but Holden can be quite annoying at times.", book5));
+            ratingRepository.save(new Rating(4, "Paul Kim", "A unique voice in literature. Captures teenage angst perfectly.", book5));
+            ratingRepository.save(new Rating(2, "Quinn Thompson", "Didn't connect with the main character. Found it hard to finish.", book5));
+            ratingRepository.save(new Rating(5, "Rachel Green", "Brilliant portrayal of adolescent alienation. Salinger is a genius.", book5));
+            
+            System.out.println("Sample ratings initialized successfully!");
+        }
     }
 }

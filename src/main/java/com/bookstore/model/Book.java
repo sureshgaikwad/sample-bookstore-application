@@ -5,7 +5,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "books")
@@ -45,6 +48,9 @@ public class Book {
     
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+    
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Rating> ratings = new ArrayList<>();
     
     // Constructors
     public Book() {}
@@ -146,6 +152,62 @@ public class Book {
     
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+    
+    public List<Rating> getRatings() {
+        return ratings;
+    }
+    
+    public void setRatings(List<Rating> ratings) {
+        this.ratings = ratings;
+    }
+    
+    // Helper methods for rating calculations
+    public Double getAverageRating() {
+        if (ratings == null || ratings.isEmpty()) {
+            return 0.0;
+        }
+        
+        double sum = ratings.stream()
+                .mapToInt(Rating::getRating)
+                .sum();
+        
+        return BigDecimal.valueOf(sum / ratings.size())
+                .setScale(1, RoundingMode.HALF_UP)
+                .doubleValue();
+    }
+    
+    public int getRatingCount() {
+        return ratings != null ? ratings.size() : 0;
+    }
+    
+    public String getStarRating() {
+        Double avgRating = getAverageRating();
+        if (avgRating == 0.0) {
+            return "☆☆☆☆☆";
+        }
+        
+        StringBuilder stars = new StringBuilder();
+        int fullStars = avgRating.intValue();
+        boolean hasHalfStar = (avgRating - fullStars) >= 0.5;
+        
+        // Add full stars
+        for (int i = 0; i < fullStars; i++) {
+            stars.append("★");
+        }
+        
+        // Add half star if needed
+        if (hasHalfStar && fullStars < 5) {
+            stars.append("☆");
+            fullStars++;
+        }
+        
+        // Add empty stars
+        for (int i = fullStars; i < 5; i++) {
+            stars.append("☆");
+        }
+        
+        return stars.toString();
     }
     
     @Override

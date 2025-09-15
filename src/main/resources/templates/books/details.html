@@ -164,6 +164,67 @@
                             <p th:text="${book.description}" class="text-muted">Book description</p>
                         </div>
 
+                        <!-- Rating Section -->
+                        <div class="mb-4">
+                            <h6><i class="fas fa-star"></i> Rating</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <span class="me-3" th:text="${book.starRating}" style="color: #ffc107; font-size: 1.5em;">☆☆☆☆☆</span>
+                                        <div>
+                                            <div class="fw-bold" th:text="${#numbers.formatDecimal(book.averageRating, 1, 1)} + ' out of 5'">0.0 out of 5</div>
+                                            <small class="text-muted" th:text="${book.ratingCount} + ' ratings'">0 ratings</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <button class="btn btn-outline-primary" onclick="showRatingForm()">
+                                        <i class="fas fa-plus"></i> Add Your Rating
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Rating Form (Initially Hidden) -->
+                            <div id="ratingForm" class="card mt-3" style="display: none;">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Rate This Book</h6>
+                                </div>
+                                <div class="card-body">
+                                    <form id="submitRatingForm">
+                                        <div class="mb-3">
+                                            <label for="rating" class="form-label">Rating (1-5 stars)</label>
+                                            <select class="form-select" id="rating" name="rating" required>
+                                                <option value="">Select rating...</option>
+                                                <option value="5">★★★★★ (5 stars)</option>
+                                                <option value="4">★★★★☆ (4 stars)</option>
+                                                <option value="3">★★★☆☆ (3 stars)</option>
+                                                <option value="2">★★☆☆☆ (2 stars)</option>
+                                                <option value="1">★☆☆☆☆ (1 star)</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="reviewerName" class="form-label">Your Name</label>
+                                            <input type="text" class="form-control" id="reviewerName" name="reviewerName" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="comment" class="form-label">Review (Optional)</label>
+                                            <textarea class="form-control" id="comment" name="comment" rows="3" 
+                                                      placeholder="Share your thoughts about this book..."></textarea>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <button type="submit" class="btn btn-primary">Submit Rating</button>
+                                            <button type="button" class="btn btn-secondary" onclick="hideRatingForm()">Cancel</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            
+                            <!-- Existing Ratings -->
+                            <div id="ratingsContainer" class="mt-3">
+                                <!-- Ratings will be loaded here dynamically -->
+                            </div>
+                        </div>
+
                         <!-- Book Details -->
                         <div class="row">
                             <div class="col-sm-6">
@@ -260,6 +321,96 @@
             document.getElementById('deleteForm').action = '/web/delete/' + bookId;
             new bootstrap.Modal(document.getElementById('deleteModal')).show();
         }
+        
+        // Rating functionality
+        function showRatingForm() {
+            document.getElementById('ratingForm').style.display = 'block';
+        }
+        
+        function hideRatingForm() {
+            document.getElementById('ratingForm').style.display = 'none';
+            document.getElementById('submitRatingForm').reset();
+        }
+        
+        // Load existing ratings
+        function loadRatings() {
+            const bookId = /*[[${book.id}]]*/ 1;
+            fetch(`/api/books/${bookId}/ratings`)
+                .then(response => response.json())
+                .then(ratings => {
+                    const container = document.getElementById('ratingsContainer');
+                    if (ratings.length === 0) {
+                        container.innerHTML = '<p class="text-muted">No ratings yet. Be the first to rate this book!</p>';
+                        return;
+                    }
+                    
+                    let html = '<h6 class="mt-3"><i class="fas fa-comments"></i> Reviews</h6>';
+                    ratings.forEach(rating => {
+                        const stars = '★'.repeat(rating.rating) + '☆'.repeat(5 - rating.rating);
+                        const date = new Date(rating.createdAt).toLocaleDateString();
+                        html += `
+                            <div class="card mb-2">
+                                <div class="card-body py-2">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <strong>${rating.reviewerName}</strong>
+                                            <span class="text-warning">${stars}</span>
+                                        </div>
+                                        <small class="text-muted">${date}</small>
+                                    </div>
+                                    ${rating.comment ? `<p class="mb-0 mt-1">${rating.comment}</p>` : ''}
+                                </div>
+                            </div>
+                        `;
+                    });
+                    container.innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Error loading ratings:', error);
+                    document.getElementById('ratingsContainer').innerHTML = '<p class="text-danger">Error loading ratings.</p>';
+                });
+        }
+        
+        // Submit rating
+        document.addEventListener('DOMContentLoaded', function() {
+            loadRatings();
+            
+            document.getElementById('submitRatingForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const bookId = /*[[${book.id}]]*/ 1;
+                const formData = new FormData(this);
+                const ratingData = {
+                    rating: parseInt(formData.get('rating')),
+                    reviewerName: formData.get('reviewerName'),
+                    comment: formData.get('comment')
+                };
+                
+                fetch(`/api/books/${bookId}/ratings`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(ratingData)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => { throw new Error(text); });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    alert('Rating submitted successfully!');
+                    hideRatingForm();
+                    loadRatings();
+                    // Reload page to update the average rating display
+                    location.reload();
+                })
+                .catch(error => {
+                    alert('Error submitting rating: ' + error.message);
+                });
+            });
+        });
     </script>
 </body>
 </html>

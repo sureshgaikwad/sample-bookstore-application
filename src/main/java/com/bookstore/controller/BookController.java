@@ -1,7 +1,9 @@
 package com.bookstore.controller;
 
 import com.bookstore.model.Book;
+import com.bookstore.model.Rating;
 import com.bookstore.service.BookService;
+import com.bookstore.service.RatingService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -9,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -18,6 +21,9 @@ public class BookController {
     
     @Autowired
     private BookService bookService;
+    
+    @Autowired
+    private RatingService ratingService;
     
     /**
      * Get all books
@@ -134,5 +140,101 @@ public class BookController {
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
+    }
+    
+    // Rating endpoints
+    
+    /**
+     * Add a rating for a book
+     */
+    @PostMapping("/{id}/ratings")
+    public ResponseEntity<?> addRating(@PathVariable Long id, @RequestBody Map<String, Object> ratingData) {
+        try {
+            Integer rating = (Integer) ratingData.get("rating");
+            String reviewerName = (String) ratingData.get("reviewerName");
+            String comment = (String) ratingData.get("comment");
+            
+            if (rating == null || rating < 1 || rating > 5) {
+                return ResponseEntity.badRequest().body("Rating must be between 1 and 5");
+            }
+            
+            if (reviewerName == null || reviewerName.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("Reviewer name is required");
+            }
+            
+            Rating newRating = ratingService.addRating(id, rating, reviewerName, comment);
+            return ResponseEntity.status(HttpStatus.CREATED).body(newRating);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    
+    /**
+     * Get all ratings for a book
+     */
+    @GetMapping("/{id}/ratings")
+    public ResponseEntity<List<Rating>> getBookRatings(@PathVariable Long id) {
+        List<Rating> ratings = ratingService.getRatingsByBookId(id);
+        return ResponseEntity.ok(ratings);
+    }
+    
+    /**
+     * Get average rating for a book
+     */
+    @GetMapping("/{id}/ratings/average")
+    public ResponseEntity<Double> getAverageRating(@PathVariable Long id) {
+        Double averageRating = ratingService.getAverageRating(id);
+        return ResponseEntity.ok(averageRating);
+    }
+    
+    /**
+     * Get rating count for a book
+     */
+    @GetMapping("/{id}/ratings/count")
+    public ResponseEntity<Long> getRatingCount(@PathVariable Long id) {
+        long count = ratingService.getRatingCount(id);
+        return ResponseEntity.ok(count);
+    }
+    
+    /**
+     * Update a rating
+     */
+    @PutMapping("/ratings/{ratingId}")
+    public ResponseEntity<?> updateRating(@PathVariable Long ratingId, @RequestBody Map<String, Object> ratingData) {
+        try {
+            Integer rating = (Integer) ratingData.get("rating");
+            String comment = (String) ratingData.get("comment");
+            
+            if (rating == null || rating < 1 || rating > 5) {
+                return ResponseEntity.badRequest().body("Rating must be between 1 and 5");
+            }
+            
+            Rating updatedRating = ratingService.updateRating(ratingId, rating, comment);
+            return ResponseEntity.ok(updatedRating);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    
+    /**
+     * Delete a rating
+     */
+    @DeleteMapping("/ratings/{ratingId}")
+    public ResponseEntity<?> deleteRating(@PathVariable Long ratingId) {
+        try {
+            ratingService.deleteRating(ratingId);
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+    
+    /**
+     * Get recent ratings across all books
+     */
+    @GetMapping("/ratings/recent")
+    public ResponseEntity<List<Rating>> getRecentRatings() {
+        List<Rating> recentRatings = ratingService.getRecentRatings();
+        return ResponseEntity.ok(recentRatings);
     }
 }

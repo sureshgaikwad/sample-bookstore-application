@@ -214,6 +214,17 @@
                             <span th:text="${#strings.abbreviate(book.description, 100)}">Description</span>
                         </p>
                         
+                        <!-- Rating Display -->
+                        <div class="mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="me-2" th:text="${book.starRating}" style="color: #ffc107; font-size: 1.1em;">☆☆☆☆☆</span>
+                                <small class="text-muted">
+                                    <span th:text="${#numbers.formatDecimal(book.averageRating, 1, 1)}">0.0</span>
+                                    (<span th:text="${book.ratingCount}">0</span> ratings)
+                                </small>
+                            </div>
+                        </div>
+                        
                         <div class="mb-2">
                             <small class="text-muted">
                                 <i class="fas fa-calendar"></i> 
