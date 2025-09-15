@@ -7,9 +7,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * Bookstore Application - A simple REST API for managing books with rating feature
  * 
  * @author Suresh Gaikwad
- * @version 1.0.4
+ * @version 1.0.5
  * Build Date: 2025-09-15
- * GitOps Test: Fixed sed approach
+ * GitOps Test: Fixed sed approach - final test
  */
 @SpringBootApplication
 public class BookstoreApplication {
