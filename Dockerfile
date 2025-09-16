@@ -1,6 +1,6 @@
 # Multi-stage build for smaller image size
-# Using upstream Maven image for better compatibility
-FROM docker.io/maven:3.9.4-eclipse-temurin-17-alpine AS builder
+# Using Red Hat UBI with Maven for better compatibility with OpenShift
+FROM registry.access.redhat.com/ubi8/openjdk-17:1.18 AS builder
 
 # Set working directory
 WORKDIR /app
@@ -20,16 +20,16 @@ COPY src ./src
 # Build the application
 RUN mvn clean package -DskipTests
 
-# Runtime stage - using upstream OpenJDK image
-FROM docker.io/eclipse-temurin:17-jre-alpine
+# Runtime stage - using Red Hat UBI with OpenJDK
+FROM registry.access.redhat.com/ubi8/openjdk-17-runtime:1.18
 
 # Add labels for better image management
 LABEL maintainer="Suresh Gaikwad <suresh.gaikwad@example.com>"
 LABEL description="Simple Bookstore Application using Spring Boot"
 LABEL version="1.0.0"
 
-# Install curl for health checks (Alpine-specific)
-RUN apk add --no-cache curl
+# Install curl for health checks (UBI-specific)
+RUN microdnf install curl -y && microdnf clean all
 
 # Create application directory
 RUN mkdir -p /app && \
@@ -45,15 +45,7 @@ COPY --from=builder /app/target/bookstore-app-1.0.0.jar app.jar
 # OpenShift runs containers with random UIDs, so we need to ensure proper permissions
 RUN chmod -R g+rwX /app
 
-# Create a non-root user (though OpenShift will override the UID)
-RUN addgroup -g 1001 appgroup && \
-    adduser -D -u 1001 -G appgroup appuser
-
-# Change ownership to the application user
-RUN chown -R appuser:appgroup /app
-
-# Switch to non-root user
-USER 1001
+# UBI images are already optimized for OpenShift
 
 # Expose port
 EXPOSE 8080

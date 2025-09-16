@@ -85,7 +85,7 @@ public class RootController {
         html.append("<div class='container'>");
         html.append("<h1 class='display-4 mb-3'><i class='fas fa-book-open'></i> Welcome to Our Bookstore</h1>");
         html.append("<p class='lead'>Discover amazing books from our curated collection</p>");
-        html.append("<p class='mb-0'>Created with ❤️ by <strong>").append(escapeHtml(appAuthor)).append("</strong></p>");
+        html.append("<p class='mb-0'>Created for Java event</p>");
         html.append("</div>");
         html.append("</div>");
         
