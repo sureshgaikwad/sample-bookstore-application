@@ -52,7 +52,7 @@ public class SimpleWebController {
         // Main content
         html.append("<div class='container mt-4'>");
         html.append("<h1>Bookstore Application</h1>");
-        html.append("<p class='text-muted'>Created by Suresh Gaikwad</p>");
+        html.append("<p class='text-muted'>Created for Java event</p>");
         html.append("<hr>");
         
         if (books.isEmpty()) {
@@ -131,7 +131,7 @@ public class SimpleWebController {
         // Footer
         html.append("<footer class='bg-dark text-light py-3 mt-5'>");
         html.append("<div class='container text-center'>");
-        html.append("<p>&copy; 2024 Bookstore Application - Created by <strong>Suresh Gaikwad</strong></p>");
+        html.append("<p>&copy; 2024 Bookstore Application - Created for Java event</p>");
         html.append("</div>");
         html.append("</footer>");
         
