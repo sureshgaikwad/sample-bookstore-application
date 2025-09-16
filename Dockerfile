@@ -28,10 +28,7 @@ LABEL maintainer="Suresh Gaikwad <suresh.gaikwad@example.com>"
 LABEL description="Simple Bookstore Application using Spring Boot"
 LABEL version="1.0.0"
 
-# Install curl for health checks (UBI-specific)
-RUN microdnf install curl -y && microdnf clean all
-
-# Create application directory
+# Create application directory with proper permissions for OpenShift
 RUN mkdir -p /app && \
     chmod -R g+rwX /app && \
     chmod -R g+rwX /tmp
@@ -50,9 +47,7 @@ RUN chmod -R g+rwX /app
 # Expose port
 EXPOSE 8080
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:8080/actuator/health || exit 1
+# Note: Health checks are handled by OpenShift/Kubernetes probes
 
 # Run the application with optimized JVM settings for containers
 ENTRYPOINT ["java", \
