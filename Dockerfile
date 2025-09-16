@@ -28,19 +28,17 @@ LABEL maintainer="Suresh Gaikwad <suresh.gaikwad@example.com>"
 LABEL description="Simple Bookstore Application using Spring Boot"
 LABEL version="1.0.0"
 
-# Create application directory with proper permissions for OpenShift
-RUN mkdir -p /app && \
-    chmod -R g+rwX /app && \
-    chmod -R g+rwX /tmp
-
-# Set working directory
-WORKDIR /app
+# Use the default working directory that OpenShift allows
+WORKDIR /deployments
 
 # Copy the JAR file from builder stage
 COPY --from=builder /app/target/bookstore-app-1.0.0.jar app.jar
 
-# OpenShift runs containers with random UIDs, so we need to ensure proper permissions
-RUN chmod -R g+rwX /app
+# Ensure proper permissions for the current directory
+USER 0
+RUN chmod -R g+rwX /deployments && \
+    chmod -R g+rwX /tmp
+USER 1001
 
 # UBI images are already optimized for OpenShift
 
